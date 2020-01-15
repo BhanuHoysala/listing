@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Custom repository for complex queries
+ */
 @Repository
 public class ListingRepositoryCustomImpl implements ListingRepositoryCustom {
 

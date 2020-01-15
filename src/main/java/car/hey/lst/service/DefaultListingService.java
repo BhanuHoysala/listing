@@ -8,11 +8,11 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
+/**
+ * Default implementation of Listing Service
+ */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional
 @Service
@@ -29,16 +29,32 @@ public class DefaultListingService implements ListingService {
         this.listingRepositoryCustom = listingRepositoryCustom;
     }
 
+
+    /**
+     * Updates existing the Listings
+     *
+     * @param dealerId
+     * @param listingDO
+     * @return
+     */
     @Override
     public ListingDO updateListing(final Long dealerId, final ListingDO listingDO) {
 
-        Optional<ListingDO> listingToUpdate = listingRepository.findLisitng(dealerId, listingDO.getCode());
+        Optional<ListingDO> listingToUpdate = listingRepository.findListing(dealerId, listingDO.getCode());
         if (listingToUpdate.isPresent()) {
             listingDO.setId(listingToUpdate.get().getId());
         }
         return listingRepository.save(listingDO);
     }
 
+
+    /**
+     * Saving the listings
+     *
+     * @param dealerId
+     * @param listingsDO
+     * @return
+     */
     @Override
     public Iterable<ListingDO> saveListings(final Long dealerId, final List<ListingDO> listingsDO) {
 
@@ -46,7 +62,7 @@ public class DefaultListingService implements ListingService {
         ListingDO listingDO = null;
         while (iterator.hasNext()) {
             listingDO = (ListingDO) iterator.next();
-            if (listingRepository.findLisitng(dealerId, listingDO.getCode()).isPresent()) {
+            if (listingRepository.findListing(dealerId, listingDO.getCode()).isPresent()) {
                 updateListing(dealerId, listingDO);
                 iterator.remove();
             }
@@ -56,10 +72,33 @@ public class DefaultListingService implements ListingService {
         return listingRepository.saveAll(listingsDO);
     }
 
+
+    /**
+     * searching over listings
+     *
+     * @param queryParams
+     * @return
+     */
     @Override
-    public List<ListingDO> findListings(Map<String, String> queryParams) {
+    public List<ListingDO> searchListings(Map<String, String> queryParams) {
 
         return listingRepositoryCustom.findListings(queryParams);
+    }
+
+    @Override
+    public List<ListingDO> getListings() {
+
+        Iterable<ListingDO> all = listingRepository.findAll();
+        final List<ListingDO> listingDOS = new ArrayList<>();
+        all.forEach(listingDOS::add);
+        return listingDOS;
+    }
+
+    @Override
+    public List<ListingDO> getListings(final Long dealerId) {
+
+        List<ListingDO> listingsDO = listingRepository.findByDealerId(dealerId);
+        return listingsDO;
     }
 }
 

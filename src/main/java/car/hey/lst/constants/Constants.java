@@ -1,4 +1,4 @@
-package car.hey.lst;
+package car.hey.lst.constants;
 
 public interface Constants {
 

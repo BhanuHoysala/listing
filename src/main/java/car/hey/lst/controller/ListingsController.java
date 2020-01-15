@@ -18,8 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static car.hey.lst.Constants.PSI_TO_KW_CONVERSION_FACTOR;
+import static car.hey.lst.constants.Constants.PSI_TO_KW_CONVERSION_FACTOR;
 
+/**
+ * Listing controller
+ */
 @Slf4j
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RestController
@@ -32,15 +35,54 @@ public class ListingsController {
         this.listingService = listingService;
     }
 
+    /**
+     * Get all the listing from all the dealers
+     *
+     * @return
+     */
+    @GetMapping
+    public ResponseEntity<List<ListingDTO>> getAllListings() {
+
+        List<ListingDO> listingDOS = listingService.getListings();
+        return ResponseEntity.ok(ListingMapper.makeListingsDTO(listingDOS));
+    }
+
+    /**
+     * Get all the listing from a dealer
+     *
+     * @return
+     */
+    @GetMapping("/{dealer_id}")
+    public ResponseEntity<List<ListingDTO>> getAllListings(@PathVariable("dealer_id") final Long dealerId) {
+
+        List<ListingDO> listingDOS = listingService.getListings(dealerId);
+        return ResponseEntity.ok(ListingMapper.makeListingsDTO(listingDOS));
+    }
+
+    /**
+     * Post listings as JOSOn data
+     *
+     * @param dealerId
+     * @param listingsDto
+     * @return
+     */
     @PostMapping("/{dealer_id}")
     public ResponseEntity<String> postListings(@PathVariable("dealer_id") final Long dealerId,
                                                @RequestBody final List<ListingDTO> listingsDto) {
 
-        final List<ListingDO> listings = ListingMapper.makeListingsDO(listingsDto);
+        final List<ListingDO> listings = ListingMapper.makeListingsDO(dealerId, listingsDto);
         listingService.saveListings(dealerId, listings);
         return ResponseEntity.ok().body("Success");
     }
 
+    /**
+     * Post listings by uploading the CSV file
+     *
+     * @param dealerId
+     * @param multipart
+     * @return
+     * @throws Exception
+     */
     @PostMapping("/upload_csv/{dealer_id}")
     public ResponseEntity<Map<String, String>> postListings(@PathVariable(value = "dealer_id") final Long dealerId,
                                                             @RequestParam("file") final MultipartFile multipart) throws Exception {
@@ -70,6 +112,12 @@ public class ListingsController {
         return ResponseEntity.ok(listingsStatus);
     }
 
+    /**
+     * Search Listings
+     *
+     * @param queryParams
+     * @return
+     */
     @GetMapping("/search")
     public ResponseEntity<List<ListingDTO>> searchListings(@RequestParam Map<String, String> queryParams) {
 
@@ -77,12 +125,18 @@ public class ListingsController {
             return ResponseEntity.ok(new ArrayList<>());
         }
 
-        List<ListingDO> listingDOS = listingService.findListings(queryParams);
+        List<ListingDO> listingDOS = listingService.searchListings(queryParams);
         List<ListingDTO> listingDTOS = ListingMapper.makeListingsDTO(listingDOS);
 
         return ResponseEntity.ok(listingDTOS);
     }
 
+    /**
+     * Parses the CSV listing data
+     *
+     * @param line
+     * @return
+     */
     private static ListingDO parseListing(String line) {
 
         String[] data = line.split(",");

@@ -11,5 +11,9 @@ public interface ListingService {
 
     Iterable<ListingDO> saveListings(Long dealerId, List<ListingDO> listingsDO);
 
-    List<ListingDO> findListings(Map<String, String> queryParams);
+    List<ListingDO> searchListings(Map<String, String> queryParams);
+
+    List<ListingDO> getListings();
+
+    List<ListingDO> getListings(Long dealerId);
 }
